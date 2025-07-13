@@ -28,9 +28,18 @@ Este repositório contém testes de performance para uma API de banco (local), d
 banco_api_tests_performance_m2.0/
 ├── 📄 README.md
 ├── 📈 html-report.html
+├── 🚀 mock-server.js
+├── 📦 package.json
 ├── 🧪 test/
 │   ├── login.interation.test.js
 │   └── login.virtual.users.test.js
+├── 📚 docs/
+│   ├── GITHUB_ACTIONS.md
+│   └── MOCK_SERVER_SETUP.md
+├── 🔄 .github/workflows/
+│   ├── k6-performance-tests.yml
+│   ├── quality-checks.yml
+│   └── k6-mock-tests.yml
 └── 🚫 .gitignore
 ```
 
@@ -70,14 +79,19 @@ banco_api_tests_performance_m2.0/
 ### Pré-requisitos
 
 - K6 instalado
-- API rodando em `localhost:3000` (ou use o mock server)
+- Node.js 16+ (para servidor mock)
+- API rodando em `localhost:3000` (ou use o servidor mock integrado)
 
 ### Executar Testes
 
 ```bash
-# Instalar dependências (se necessário)
+# Instalar dependências
 npm install
 
+# Iniciar servidor mock (recomendado)
+npm run start:mock
+
+# Em outro terminal, executar os testes:
 # Teste por iterações
 npm run test:iterations
 # ou
@@ -91,12 +105,49 @@ k6 run test/login.virtual.users.test.js
 # Executar todos os testes
 npm run test:all
 
-# Iniciar servidor mock para testes
-npm run start:mock
-
 # Gerar relatório HTML
 K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=html-report.html k6 run <path_e_nome_do_teste>
 ```
+
+### 🚀 Servidor Mock Integrado
+
+O projeto inclui um servidor mock que simula a API de login:
+
+```bash
+# Iniciar servidor mock
+npm run start:mock
+
+# Testar endpoints
+curl http://localhost:3000/health
+curl -X POST http://localhost:3000/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"julio.lima","senha":"123456"}'
+```
+
+**Endpoints disponíveis:**
+
+- `GET /health` - Health check
+- `POST /login` - Simulação de login
+- `GET /` - Informações do servidor
+
+## 🔧 Solução de Problemas
+
+### ❌ **Problema Resolvido:**
+
+O projeto estava falhando no GitHub Actions com erro de conexão recusada:
+
+```
+error="Post \"http://localhost:3000/login\": dial tcp 127.0.0.1:3000: connect: connection refused"
+```
+
+### ✅ **Solução Implementada:**
+
+- **Servidor Mock Estático:** `mock-server.js` com endpoints funcionais
+- **Workflow Aprimorado:** Inicialização robusta com health checks
+- **Processo de Limpeza:** Encerramento automático de processos
+- **Logs Detalhados:** Debugging facilitado
+
+**📖 Documentação completa:** [docs/MOCK_SERVER_SETUP.md](docs/MOCK_SERVER_SETUP.md)
 
 ## 🔄 GitHub Actions (CI/CD)
 
@@ -123,6 +174,7 @@ Este projeto utiliza GitHub Actions para automatizar os testes de performance. O
 ### 🎯 Triggers
 
 Os workflows são executados automaticamente em:
+
 - ✅ Push para branches `main` e `develop`
 - ✅ Pull Requests para `main` e `develop`
 - ✅ Execução manual via GitHub Actions

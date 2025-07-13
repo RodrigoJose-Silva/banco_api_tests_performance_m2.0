@@ -164,6 +164,3 @@ npx eslint --print-config test/*.js
 4. **Automação:** Deploy automático baseado em performance
 
 ---
-
-**Mentoria 2.0 - Julio de Lima**  
-*GitHub Actions para Testes de Performance* 

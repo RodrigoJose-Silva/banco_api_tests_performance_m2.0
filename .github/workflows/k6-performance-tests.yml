@@ -28,54 +28,44 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create Mock API Server
-        run: |
-          cat > mock-server.js << 'EOF'
-          const express = require('express');
-          const cors = require('cors');
-
-          const app = express();
-          const PORT = 3000;
-
-          app.use(cors());
-          app.use(express.json());
-
-          app.post('/login', (req, res) => {
-            const { username, senha } = req.body;
-            
-            // Simular validação
-            if (username === 'julio.lima' && senha === '123456') {
-              res.status(200).json({
-                token: 'mock-jwt-token-' + Date.now(),
-                message: 'Login successful'
-              });
-            } else {
-              res.status(401).json({
-                error: 'Invalid credentials'
-              });
-            }
-          });
-
-          app.get('/health', (req, res) => {
-            res.status(200).json({ status: 'OK' });
-          });
-
-          app.listen(PORT, () => {
-            console.log(`Mock API server running on port ${PORT}`);
-          });
-          EOF
-
       - name: Start Mock API Server
-        run: node mock-server.js &
+        run: |
+          echo "🚀 Iniciando servidor mock..."
+          npm run start:mock &
+          MOCK_PID=$!
+          echo $MOCK_PID > mock-server.pid
         env:
           NODE_ENV: test
+          PORT: 3000
 
-      - name: Wait for server to start
+      - name: Wait for server to start and verify
         run: |
-          echo "⏳ Aguardando servidor mock iniciar..."
-          sleep 5
-          curl -f http://localhost:3000/health || exit 1
-          echo "✅ Servidor mock está rodando!"
+          echo "⏳ Aguardando servidor mock inicializar..."
+
+          # Aguardar até 30 segundos com verificações a cada 2 segundos
+          for i in {1..15}; do
+            echo "Tentativa $i/15..."
+            if curl -f -s http://localhost:3000/health > /dev/null 2>&1; then
+              echo "✅ Servidor mock está respondendo!"
+              break
+            fi
+            if [ $i -eq 15 ]; then
+              echo "❌ Servidor mock não iniciou após 30 segundos"
+              exit 1
+            fi
+            sleep 2
+          done
+
+          # Verificação adicional
+          echo "🔍 Verificando endpoint de login..."
+          curl -f -s -X POST http://localhost:3000/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"julio.lima","senha":"123456"}' > /dev/null 2>&1 || {
+            echo "❌ Endpoint de login não está funcionando"
+            exit 1
+          }
+
+          echo "✅ Servidor mock está totalmente funcional!"
 
       - name: Run K6 Iteration Tests
         uses: grafana/k6-action@v0.3.0
@@ -108,6 +98,13 @@ jobs:
           if [ -f results-iterations.json ]; then
             echo "✅ Teste por iterações: COMPLETO"
             echo "   - Arquivo: results-iterations.json"
+            
+            # Extrair informações básicas do resultado
+            if command -v jq >/dev/null 2>&1; then
+              echo "   - Métricas:"
+              jq -r '.metrics.http_req_duration.values.p95 // "N/A"' results-iterations.json | xargs echo "     * P95 Duration:"
+              jq -r '.metrics.http_req_failed.values.rate // "N/A"' results-iterations.json | xargs echo "     * Failed Rate:"
+            fi
           else
             echo "❌ Teste por iterações: FALHOU"
           fi
@@ -115,9 +112,23 @@ jobs:
           if [ -f results-virtual-users.json ]; then
             echo "✅ Teste com usuários virtuais: COMPLETO"
             echo "   - Arquivo: results-virtual-users.json"
+            
+            # Extrair informações básicas do resultado
+            if command -v jq >/dev/null 2>&1; then
+              echo "   - Métricas:"
+              jq -r '.metrics.http_req_duration.values.p95 // "N/A"' results-virtual-users.json | xargs echo "     * P95 Duration:"
+              jq -r '.metrics.http_req_failed.values.rate // "N/A"' results-virtual-users.json | xargs echo "     * Failed Rate:"
+            fi
           else
             echo "❌ Teste com usuários virtuais: FALHOU"
           fi
+
+          echo ""
+          echo "🔍 Informações do Ambiente:"
+          echo "   - Node.js: $(node --version)"
+          echo "   - NPM: $(npm --version)"
+          echo "   - Porta do servidor: 3000"
+          echo "   - Ambiente: $NODE_ENV"
 
           echo ""
           echo "🎉 Todos os testes executados com servidor mock!"
@@ -129,3 +140,25 @@ jobs:
           name: k6-html-reports
           path: report-*.html
           retention-days: 30
+
+      - name: Cleanup Mock Server
+        if: always()
+        run: |
+          echo "🧹 Limpando servidor mock..."
+          if [ -f mock-server.pid ]; then
+            MOCK_PID=$(cat mock-server.pid)
+            if kill -0 $MOCK_PID 2>/dev/null; then
+              echo "🛑 Encerrando processo do servidor mock (PID: $MOCK_PID)..."
+              kill $MOCK_PID
+              sleep 2
+            fi
+            rm -f mock-server.pid
+          fi
+
+          # Verificar se ainda há processos na porta 3000
+          if lsof -ti:3000 > /dev/null 2>&1; then
+            echo "🛑 Forçando encerramento de processos na porta 3000..."
+            lsof -ti:3000 | xargs kill -9
+          fi
+
+          echo "✅ Limpeza concluída!"
