@@ -25,9 +25,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint JavaScript files
-        run: npx eslint test/*.js --format=compact
-
       - name: Check file structure
         run: |
           echo "📁 Verificando estrutura do projeto..."
@@ -35,9 +32,39 @@ jobs:
           echo "✅ Diretório test/ existe: $([ -d test/ ] && echo 'SIM' || echo 'NÃO')"
           echo "✅ login.interation.test.js existe: $([ -f test/login.interation.test.js ] && echo 'SIM' || echo 'NÃO')"
           echo "✅ login.virtual.users.test.js existe: $([ -f test/login.virtual.users.test.js ] && echo 'SIM' || echo 'NÃO')"
+          echo "✅ package.json existe: $([ -f package.json ] && echo 'SIM' || echo 'NÃO')"
+          echo "✅ package-lock.json existe: $([ -f package-lock.json ] && echo 'SIM' || echo 'NÃO')"
 
       - name: Validate test files syntax
         run: |
           echo "🔍 Validando sintaxe dos arquivos de teste..."
-          node -c test/login.interation.test.js && echo "✅ login.interation.test.js - OK"
-          node -c test/login.virtual.users.test.js && echo "✅ login.virtual.users.test.js - OK"
+          if node -c test/login.interation.test.js; then
+            echo "✅ login.interation.test.js - OK"
+          else
+            echo "❌ login.interation.test.js - ERRO DE SINTAXE"
+            exit 1
+          fi
+
+          if node -c test/login.virtual.users.test.js; then
+            echo "✅ login.virtual.users.test.js - OK"
+          else
+            echo "❌ login.virtual.users.test.js - ERRO DE SINTAXE"
+            exit 1
+          fi
+
+      - name: Lint JavaScript files
+        run: |
+          echo "🔍 Executando ESLint..."
+          if npx eslint test/*.js --format=compact; then
+            echo "✅ ESLint passou sem erros"
+          else
+            echo "❌ ESLint encontrou problemas"
+            exit 1
+          fi
+
+      - name: Quality Check Summary
+        run: |
+          echo "🎉 Todos os checks de qualidade passaram!"
+          echo "✅ Estrutura do projeto: OK"
+          echo "✅ Sintaxe JavaScript: OK"
+          echo "✅ Padrões de código: OK"
