@@ -70,20 +70,69 @@ banco_api_tests_performance_m2.0/
 ### Pré-requisitos
 
 - K6 instalado
-- API rodando em `localhost:3000`
+- API rodando em `localhost:3000` (ou use o mock server)
 
 ### Executar Testes
 
 ```bash
+# Instalar dependências (se necessário)
+npm install
+
 # Teste por iterações
+npm run test:iterations
+# ou
 k6 run test/login.interation.test.js
 
 # Teste com usuários virtuais
+npm run test:virtual-users
+# ou
 k6 run test/login.virtual.users.test.js
+
+# Executar todos os testes
+npm run test:all
+
+# Iniciar servidor mock para testes
+npm run start:mock
 
 # Gerar relatório HTML
 K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=html-report.html k6 run <path_e_nome_do_teste>
 ```
+
+## 🔄 GitHub Actions (CI/CD)
+
+Este projeto utiliza GitHub Actions para automatizar os testes de performance. Os workflows configurados incluem:
+
+### 📋 Workflows Disponíveis
+
+1. **K6 Performance Tests** (`.github/workflows/k6-performance-tests.yml`)
+   - Executa testes de performance com K6
+   - Gera relatórios JSON e HTML
+   - Upload de artifacts para análise
+
+2. **Quality Checks** (`.github/workflows/quality-checks.yml`)
+   - Verificação de qualidade do código
+   - Linting com ESLint
+   - Validação de sintaxe
+   - Verificação da estrutura do projeto
+
+3. **K6 Tests with Mock API** (`.github/workflows/k6-mock-tests.yml`)
+   - Executa testes com servidor mock
+   - Garante funcionamento no ambiente CI/CD
+   - Não depende de API externa
+
+### 🎯 Triggers
+
+Os workflows são executados automaticamente em:
+- ✅ Push para branches `main` e `develop`
+- ✅ Pull Requests para `main` e `develop`
+- ✅ Execução manual via GitHub Actions
+
+### 📊 Resultados
+
+- **Status Checks**: Integração com Pull Requests
+- **Artifacts**: Relatórios de teste disponíveis para download
+- **Logs**: Histórico completo de execuções
+- **Thresholds**: Validação automática de performance
 
 ## 📊 Resultados
 

@@ -1,0 +1,58 @@
+name: K6 Performance Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  performance-tests:
+    name: Run K6 Performance Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup K6
+        uses: grafana/k6-action@v0.3.0
+        with:
+          filename: test/login.interation.test.js
+          flags: --out json=results-iterations.json
+
+      - name: Run K6 Virtual Users Test
+        uses: grafana/k6-action@v0.3.0
+        with:
+          filename: test/login.virtual.users.test.js
+          flags: --out json=results-virtual-users.json
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-results
+          path: |
+            results-*.json
+            *.html
+          retention-days: 30
+
+      - name: Generate HTML Report
+        run: |
+          # Instalar k6-reporter se necessário
+          npm install -g k6-reporter || true
+
+          # Gerar relatório HTML se o k6-reporter estiver disponível
+          if command -v k6-reporter &> /dev/null; then
+            k6-reporter --input results-iterations.json --output report-iterations.html
+            k6-reporter --input results-virtual-users.json --output report-virtual-users.html
+          fi
+
+      - name: Upload HTML Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-html-reports
+          path: report-*.html
+          retention-days: 30
