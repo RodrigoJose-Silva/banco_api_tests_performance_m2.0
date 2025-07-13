@@ -17,8 +17,8 @@ Este projeto utiliza GitHub Actions para automatizar testes de performance e gar
 - ✅ Integração com status checks do GitHub
 
 **Triggers:**
-- Push para `main` e `develop`
-- Pull Requests para `main` e `develop`
+- Push para `main`
+- Pull Requests para `main`
 - Execução manual
 
 ### 2. Quality Checks (`quality-checks.yml`)
@@ -32,8 +32,8 @@ Este projeto utiliza GitHub Actions para automatizar testes de performance e gar
 - ✅ Relatórios de qualidade
 
 **Triggers:**
-- Push para `main` e `develop`
-- Pull Requests para `main` e `develop`
+- Push para `main`
+- Pull Requests para `main`
 - Execução manual
 
 ### 3. K6 Tests with Mock API (`k6-mock-tests.yml`)
@@ -47,8 +47,8 @@ Este projeto utiliza GitHub Actions para automatizar testes de performance e gar
 - ✅ Relatórios específicos para ambiente mock
 
 **Triggers:**
-- Push para `main` e `develop`
-- Pull Requests para `main` e `develop`
+- Push para `main`
+- Pull Requests para `main`
 - Execução manual
 
 ## 🛠️ Configuração
