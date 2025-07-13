@@ -1,102 +1,112 @@
-# Banco API - Testes de Performance
+# 🏦 Banco API - Testes de Performance
 
-## 📋 Descrição do Projeto
+> **Projeto desenvolvido durante a Mentoria 2.0**  
+> **Mentor: Julio de Lima**  
+> **Foco: Testes de Performance com K6**
 
-Este projeto faz parte do estudo de **Testes de Performance** da **Mentoria 2.0**, ministrada pelo **Julio de Lima**. O objetivo é demonstrar e praticar conceitos fundamentais de testes de performance utilizando a ferramenta **k6**.
+## 📋 Sobre o Projeto
+
+Este repositório contém testes de performance para uma API de banco (local), desenvolvido como parte dos estudos da **Mentoria 2.0** ministrada pelo **Julio de Lima**. O projeto demonstra diferentes abordagens para testar a performance e carga de APIs usando a ferramenta K6.
 
 ## 🎯 Objetivos
 
-- Implementar testes de performance para APIs REST
-- Demonstrar o uso da ferramenta k6 para testes de carga
-- Validar performance e comportamento de endpoints de autenticação
-- Estabelecer métricas e thresholds para qualidade de performance
+- ✅ Implementar testes de performance com K6
+- ✅ Testar diferentes cenários de carga
+- ✅ Validar performance de endpoints de autenticação
+- ✅ Gerar relatórios de performance
+- ✅ Aplicar boas práticas em testes de API
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **k6**: Ferramenta de teste de performance em JavaScript
-- **HTTP/HTTPS**: Para comunicação com APIs REST
-- **JSON**: Formato de dados para requisições e respostas
+- **🔧 K6** - Ferramenta de teste de performance
+- **🌐 HTTP/JSON** - Comunicação com APIs
+- **📊 Relatórios HTML** - Visualização de resultados
 
 ## 📁 Estrutura do Projeto
 
 ```
 banco_api_tests_performance_m2.0/
-├── README.md
-└── test/
-    └── login.test.js
+├── 📄 README.md
+├── 📈 html-report.html
+├── 🧪 test/
+│   ├── login.interation.test.js
+│   └── login.virtual.users.test.js
+└── 🚫 .gitignore
 ```
 
 ## 🧪 Testes Implementados
 
-### Teste de Login (`test/login.test.js`)
+### 1. 🔄 Teste por Iterações (`login.interation.test.js`)
 
-Este teste valida o endpoint de autenticação da aplicação:
+**Configuração:**
 
-#### Configurações do Teste:
-- **Iterações**: 10 execuções
-- **Threshold**: 95% das requisições devem ter duração menor que 20ms
-- **Delay**: 1 segundo entre requisições
+- **Iterações:** 50
+- **Threshold:** 95% das requisições < 20ms
+- **Taxa de Falha:** < 1%
 
-#### Validações Realizadas:
-1. **Status Code**: Verifica se a resposta retorna status 200
-2. **Token**: Valida se o token retornado é do tipo string
+**Funcionalidades Testadas:**
 
-#### Endpoint Testado:
-- **URL**: `http://localhost:3000/login`
-- **Método**: POST
-- **Payload**: 
-  ```json
-  {
-    "username": "julio.lima",
-    "senha": "123456"
-  }
-  ```
+- Endpoint: `POST /login`
+- Validação de status 200
+- Verificação de token de resposta
+
+### 2. 👥 Teste com Usuários Virtuais (`login.virtual.users.test.js`)
+
+**Configuração:**
+
+- **Usuários Virtuais:** 10 simultâneos
+- **Duração:** 30 segundos
+- **Threshold:** 95% das requisições < 2000ms
+- **Taxa de Falha:** < 1%
+
+**Funcionalidades Testadas:**
+
+- Simulação de carga real
+- Teste de concorrência
+- Validação de performance sob stress
 
 ## 🚀 Como Executar
 
 ### Pré-requisitos
-- Node.js instalado
-- k6 instalado
-- API do banco rodando em `localhost:3000`
 
-### Executando os Testes
+- K6 instalado
+- API rodando em `localhost:3000`
+
+### Executar Testes
 
 ```bash
-# Executar o teste de login
-k6 run test/login.test.js
+# Teste por iterações
+k6 run test/login.interation.test.js
+
+# Teste com usuários virtuais
+k6 run test/login.virtual.users.test.js
+
+# Gerar relatório HTML
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=html-report.html k6 run <path_e_nome_do_teste>
 ```
 
-## 📊 Métricas Monitoradas
+## 📊 Resultados
 
-- **http_req_duration**: Duração das requisições HTTP
-- **http_req_failed**: Taxa de falha das requisições
-- **http_reqs**: Número total de requisições
-- **iterations**: Número de iterações executadas
+Os testes geram relatórios detalhados incluindo:
 
-## 🎓 Contexto Educacional
+- ⏱️ Tempo de resposta
+- 📈 Taxa de requisições por segundo
+- ❌ Taxa de erro
+- 📊 Percentis de performance
 
-Este projeto é parte integrante da **Mentoria 2.0** do Julio de Lima, focada em:
+## 🎓 Mentoria 2.0
 
-- **Testes de Performance**: Conceitos fundamentais e práticos
-- **Ferramentas de Teste**: Uso eficiente do k6
-- **Métricas de Qualidade**: Definição e monitoramento de thresholds
-- **Automação de Testes**: Implementação de testes automatizados de performance
+Este projeto faz parte do programa de estudos da **Mentoria 2.0**, onde aprendemos no módulo de Teste de Performance:
 
-## 👨‍🏫 Sobre a Mentoria
+- 📚 Fundamentos de testes de performance
+- 🔧 Uso prático do K6
+- 📊 Análise de resultados
+- 🎯 Definição de thresholds
+- 🔄 Diferentes estratégias de teste
 
-A **Mentoria 2.0** é um programa educacional que aborda temas avançados de qualidade de software, com foco especial em testes de performance e automação. Ministrada pelo Julio de Lima, a mentoria oferece conhecimento prático e teórico para profissionais que desejam se especializar em testes de software.
+**Mentor:** Julio de Lima  
+**Foco:** Testes de Performance e Carga
 
-## 📈 Próximos Passos
+## 📝 Licença
 
-- Implementar testes para outros endpoints da API
-- Adicionar cenários de carga mais complexos
-- Configurar relatórios detalhados de performance
-- Integrar com pipelines de CI/CD
-
-## 🤝 Contribuição
-
-Este projeto é parte de um estudo educacional. Para dúvidas ou sugestões relacionadas à mentoria, entre em contato com o Julio de Lima.
-
----
-
-**Desenvolvido como parte da Mentoria 2.0 - Testes de Performance** 🚀
+Este projeto é parte do material de estudo da Mentoria 2.0.
