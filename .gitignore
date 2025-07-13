@@ -4,7 +4,9 @@ report-*.html
 
 # Resultados de testes
 results-*.json
-*.json
+
+# Manter package-lock.json para CI/CD
+!package-lock.json
 
 # Dependências
 node_modules/

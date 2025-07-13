@@ -1,5 +1,8 @@
 name: K6 Performance Tests
 
+# ⚠️ ATENÇÃO: Este workflow depende de uma API rodando em localhost:3000
+# Para testes independentes, use o workflow k6-mock-tests.yml
+
 on:
   push:
     branches: main
@@ -38,16 +41,30 @@ jobs:
             *.html
           retention-days: 30
 
-      - name: Generate HTML Report
+      - name: Generate Test Summary
         run: |
-          # Instalar k6-reporter se necessário
-          npm install -g k6-reporter || true
+          echo "📊 Resumo dos Testes de Performance:"
+          echo "==================================="
 
-          # Gerar relatório HTML se o k6-reporter estiver disponível
-          if command -v k6-reporter &> /dev/null; then
-            k6-reporter --input results-iterations.json --output report-iterations.html
-            k6-reporter --input results-virtual-users.json --output report-virtual-users.html
+          # Verificar se os arquivos de resultado existem
+          if [ -f results-iterations.json ]; then
+            echo "✅ Teste por iterações: COMPLETO"
+            echo "   - Arquivo: results-iterations.json"
+          else
+            echo "❌ Teste por iterações: FALHOU"
+            echo "   - Possível causa: API não disponível em localhost:3000"
           fi
+
+          if [ -f results-virtual-users.json ]; then
+            echo "✅ Teste com usuários virtuais: COMPLETO"
+            echo "   - Arquivo: results-virtual-users.json"
+          else
+            echo "❌ Teste com usuários virtuais: FALHOU"
+            echo "   - Possível causa: API não disponível em localhost:3000"
+          fi
+
+          echo ""
+          echo "💡 Dica: Para testes independentes, use o workflow 'K6 Tests with Mock API'"
 
       - name: Upload HTML Reports
         uses: actions/upload-artifact@v4

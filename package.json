@@ -1,0 +1,35 @@
+{
+  "name": "banco-api-tests-performance",
+  "version": "1.0.0",
+  "description": "Testes de performance para API de banco usando K6 - Mentoria 2.0",
+  "main": "index.js",
+  "scripts": {
+    "test:iterations": "k6 run test/login.interation.test.js",
+    "test:virtual-users": "k6 run test/login.virtual.users.test.js",
+    "test:all": "npm run test:iterations && npm run test:virtual-users",
+    "test:ci": "k6 run --out json=results.json test/login.interation.test.js",
+    "lint": "eslint test/*.js",
+    "lint:fix": "eslint test/*.js --fix",
+    "start:mock": "node mock-server.js"
+  },
+  "keywords": [
+    "k6",
+    "performance",
+    "testing",
+    "api",
+    "mentoria2.0"
+  ],
+  "author": "Mentoria 2.0 - Julio de Lima",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+} 
