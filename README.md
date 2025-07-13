@@ -33,13 +33,19 @@ banco_api_tests_performance_m2.0/
 ├── 🧪 test/
 │   ├── login.interation.test.js
 │   └── login.virtual.users.test.js
+├── 🔧 scripts/
+│   ├── validate-api.js
+│   └── setup-test-environment.js
 ├── 📚 docs/
 │   ├── GITHUB_ACTIONS.md
-│   └── MOCK_SERVER_SETUP.md
+│   ├── MOCK_SERVER_SETUP.md
+│   └── API_VALIDATION_AND_MOCK_SETUP.md
+├── 🎯 examples/
+│   └── api-validation-example.js
 ├── 🔄 .github/workflows/
 │   ├── k6-performance-tests.yml
-│   ├── quality-checks.yml
-│   └── k6-mock-tests.yml
+│   ├── k6-mock-only-tests.yml
+│   └── quality-checks.yml
 └── 🚫 .gitignore
 ```
 
@@ -80,7 +86,22 @@ banco_api_tests_performance_m2.0/
 
 - K6 instalado
 - Node.js 16+ (para servidor mock)
-- API rodando em `localhost:3000` (ou use o servidor mock integrado)
+- API externa (opcional) ou servidor mock integrado
+
+### 🔍 Sistema de Validação Inteligente
+
+O projeto agora inclui um sistema que detecta automaticamente se a API externa está disponível:
+
+```bash
+# Validar se a API externa está disponível (3 tentativas)
+npm run validate:api
+
+# Configurar ambiente automaticamente (API externa ou mock)
+npm run setup:test-env
+
+# Executar testes com detecção inteligente
+npm run test:smart
+```
 
 ### Executar Testes
 
@@ -88,7 +109,11 @@ banco_api_tests_performance_m2.0/
 # Instalar dependências
 npm install
 
-# Iniciar servidor mock (recomendado)
+# Opção 1: Execução inteligente (recomendado)
+npm run test:smart
+
+# Opção 2: Execução manual
+# Iniciar servidor mock
 npm run start:mock
 
 # Em outro terminal, executar os testes:
@@ -107,6 +132,21 @@ npm run test:all
 
 # Gerar relatório HTML
 K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=html-report.html k6 run <path_e_nome_do_teste>
+```
+
+### 🌐 Configuração de API Externa
+
+Para usar uma API externa, configure a variável de ambiente:
+
+```bash
+# Configurar URL da API externa
+export EXTERNAL_API_URL="https://sua-api.com"
+
+# Executar validação
+npm run validate:api
+
+# Executar testes
+npm run test:all
 ```
 
 ### 🚀 Servidor Mock Integrado
@@ -155,21 +195,24 @@ Este projeto utiliza GitHub Actions para automatizar os testes de performance. O
 
 ### 📋 Workflows Disponíveis
 
-1. **K6 Performance Tests** (`.github/workflows/k6-performance-tests.yml`)
-   - Executa testes de performance com K6
-   - Gera relatórios JSON e HTML
-   - Upload de artifacts para análise
+1. **K6 Performance Tests with Smart API Detection** (`.github/workflows/k6-performance-tests.yml`)
+   - ✅ Detecta automaticamente se a API externa está disponível
+   - 🔄 Retry de 3 tentativas antes de usar mock
+   - 🎭 Fallback automático para servidor mock
+   - 📊 Gera relatórios JSON e HTML
+   - 🚀 Upload de artifacts para análise
 
-2. **Quality Checks** (`.github/workflows/quality-checks.yml`)
+2. **K6 Performance Tests (Mock Only)** (`.github/workflows/k6-mock-only-tests.yml`)
+   - 🎭 Executa testes apenas com servidor mock
+   - ⚡ Execução mais rápida
+   - 🔧 Ideal para desenvolvimento e branches feature
+   - 📊 Relatórios específicos para ambiente mock
+
+3. **Quality Checks** (`.github/workflows/quality-checks.yml`)
    - Verificação de qualidade do código
    - Linting com ESLint
    - Validação de sintaxe
    - Verificação da estrutura do projeto
-
-3. **K6 Tests with Mock API** (`.github/workflows/k6-mock-tests.yml`)
-   - Executa testes com servidor mock
-   - Garante funcionamento no ambiente CI/CD
-   - Não depende de API externa
 
 ### 🎯 Triggers
 

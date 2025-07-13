@@ -1,7 +1,7 @@
-name: K6 Performance Tests
+name: K6 Performance Tests with Smart API Detection
 
-# ✅ Este workflow agora usa servidor mock para garantir funcionamento no CI/CD
-# Não depende mais de API externa em localhost:3000
+# ✅ Este workflow agora detecta automaticamente se a API externa está disponível
+# Se não estiver, usa o servidor mock como fallback
 
 on:
   push:
@@ -10,9 +10,16 @@ on:
     branches: main
   workflow_dispatch: # Permite execução manual
 
+env:
+  # Configurações da API externa
+  EXTERNAL_API_URL: ${{ secrets.EXTERNAL_API_URL || 'http://localhost:3000' }}
+  API_MAX_RETRIES: 3
+  API_TIMEOUT: 5000
+  MOCK_SERVER_PORT: 3000
+
 jobs:
   performance-tests:
-    name: Run K6 Performance Tests with Mock API
+    name: Run K6 Performance Tests with Smart API Detection
     runs-on: ubuntu-latest
 
     steps:
@@ -28,24 +35,39 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Start Mock API Server
+      - name: Validate External API with Retry
+        id: api-validation
         run: |
-          echo "🚀 Iniciando servidor mock..."
+          echo "🔍 Validando API externa com retry..."
+          echo "URL da API: $EXTERNAL_API_URL"
+          echo "Máximo de tentativas: $API_MAX_RETRIES"
+          echo "Timeout: ${API_TIMEOUT}ms"
+
+          # Executar validação da API
+          if npm run validate:api; then
+            echo "✅ API externa está disponível!"
+            echo "use_mock=false" >> $GITHUB_OUTPUT
+            echo "api_url=$EXTERNAL_API_URL" >> $GITHUB_OUTPUT
+          else
+            echo "❌ API externa não está disponível após $API_MAX_RETRIES tentativas"
+            echo "🔄 Usando servidor mock como fallback..."
+            echo "use_mock=true" >> $GITHUB_OUTPUT
+            echo "api_url=http://localhost:$MOCK_SERVER_PORT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Start Mock Server (if needed)
+        if: steps.api-validation.outputs.use_mock == 'true'
+        run: |
+          echo "🎭 Iniciando servidor mock..."
           npm run start:mock &
           MOCK_PID=$!
           echo $MOCK_PID > mock-server.pid
-        env:
-          NODE_ENV: test
-          PORT: 3000
 
-      - name: Wait for server to start and verify
-        run: |
+          # Aguardar servidor inicializar
           echo "⏳ Aguardando servidor mock inicializar..."
-
-          # Aguardar até 30 segundos com verificações a cada 2 segundos
           for i in {1..15}; do
             echo "Tentativa $i/15..."
-            if curl -f -s http://localhost:3000/health > /dev/null 2>&1; then
+            if curl -f -s http://localhost:$MOCK_SERVER_PORT/health > /dev/null 2>&1; then
               echo "✅ Servidor mock está respondendo!"
               break
             fi
@@ -56,25 +78,35 @@ jobs:
             sleep 2
           done
 
-          # Verificação adicional
-          echo "🔍 Verificando endpoint de login..."
-          curl -f -s -X POST http://localhost:3000/login \
+      - name: Verify API Endpoint
+        run: |
+          API_URL="${{ steps.api-validation.outputs.api_url }}"
+          echo "🔍 Verificando endpoint de login em: $API_URL"
+
+          # Testar endpoint de login
+          curl -f -s -X POST "$API_URL/login" \
             -H "Content-Type: application/json" \
             -d '{"username":"julio.lima","senha":"123456"}' > /dev/null 2>&1 || {
-            echo "❌ Endpoint de login não está funcionando"
+            echo "❌ Endpoint de login não está funcionando em $API_URL"
             exit 1
           }
 
-          echo "✅ Servidor mock está totalmente funcional!"
+          echo "✅ API está funcionando corretamente!"
 
       - name: Run K6 Iteration Tests
         uses: grafana/k6-action@v0.3.0
+        env:
+          API_BASE_URL: ${{ steps.api-validation.outputs.api_url }}
+          USE_MOCK_SERVER: ${{ steps.api-validation.outputs.use_mock }}
         with:
           filename: test/login.interation.test.js
           flags: --out json=results-iterations.json
 
       - name: Run K6 Virtual Users Tests
         uses: grafana/k6-action@v0.3.0
+        env:
+          API_BASE_URL: ${{ steps.api-validation.outputs.api_url }}
+          USE_MOCK_SERVER: ${{ steps.api-validation.outputs.use_mock }}
         with:
           filename: test/login.virtual.users.test.js
           flags: --out json=results-virtual-users.json
@@ -93,6 +125,9 @@ jobs:
         run: |
           echo "📊 Resumo dos Testes de Performance:"
           echo "==================================="
+          echo "🔗 API Utilizada: ${{ steps.api-validation.outputs.api_url }}"
+          echo "🎭 Usando Mock: ${{ steps.api-validation.outputs.use_mock }}"
+          echo ""
 
           # Verificar se os arquivos de resultado existem
           if [ -f results-iterations.json ]; then
@@ -127,11 +162,16 @@ jobs:
           echo "🔍 Informações do Ambiente:"
           echo "   - Node.js: $(node --version)"
           echo "   - NPM: $(npm --version)"
-          echo "   - Porta do servidor: 3000"
-          echo "   - Ambiente: $NODE_ENV"
+          echo "   - API Externa: $EXTERNAL_API_URL"
+          echo "   - Tentativas de Retry: $API_MAX_RETRIES"
+          echo "   - Timeout: ${API_TIMEOUT}ms"
 
           echo ""
-          echo "🎉 Todos os testes executados com servidor mock!"
+          if [ "${{ steps.api-validation.outputs.use_mock }}" = "true" ]; then
+            echo "🎭 Testes executados com servidor mock (API externa indisponível)"
+          else
+            echo "🌐 Testes executados com API externa"
+          fi
 
       - name: Upload HTML Reports
         uses: actions/upload-artifact@v4
@@ -142,7 +182,7 @@ jobs:
           retention-days: 30
 
       - name: Cleanup Mock Server
-        if: always()
+        if: always() && steps.api-validation.outputs.use_mock == 'true'
         run: |
           echo "🧹 Limpando servidor mock..."
           if [ -f mock-server.pid ]; then
@@ -156,9 +196,9 @@ jobs:
           fi
 
           # Verificar se ainda há processos na porta 3000
-          if lsof -ti:3000 > /dev/null 2>&1; then
-            echo "🛑 Forçando encerramento de processos na porta 3000..."
-            lsof -ti:3000 | xargs kill -9
+          if lsof -ti:$MOCK_SERVER_PORT > /dev/null 2>&1; then
+            echo "🛑 Forçando encerramento de processos na porta $MOCK_SERVER_PORT..."
+            lsof -ti:$MOCK_SERVER_PORT | xargs kill -9
           fi
 
           echo "✅ Limpeza concluída!"

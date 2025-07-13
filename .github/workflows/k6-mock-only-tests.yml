@@ -1,0 +1,175 @@
+name: K6 Performance Tests (Mock Only)
+
+# ✅ Este workflow executa testes APENAS com servidor mock
+# Útil para desenvolvimento local ou quando API externa não está disponível
+
+on:
+  push:
+    branches: [develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch: # Permite execução manual
+
+env:
+  MOCK_SERVER_PORT: 3000
+  USE_MOCK_SERVER: 'true'
+  API_BASE_URL: 'http://localhost:3000'
+
+jobs:
+  mock-performance-tests:
+    name: Run K6 Performance Tests with Mock Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start Mock Server
+        run: |
+          echo "🎭 Iniciando servidor mock..."
+          npm run start:mock &
+          MOCK_PID=$!
+          echo $MOCK_PID > mock-server.pid
+          
+          # Aguardar servidor inicializar
+          echo "⏳ Aguardando servidor mock inicializar..."
+          for i in {1..15}; do
+            echo "Tentativa $i/15..."
+            if curl -f -s http://localhost:$MOCK_SERVER_PORT/health > /dev/null 2>&1; then
+              echo "✅ Servidor mock está respondendo!"
+              break
+            fi
+            if [ $i -eq 15 ]; then
+              echo "❌ Servidor mock não iniciou após 30 segundos"
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Verify Mock API Endpoint
+        run: |
+          echo "🔍 Verificando endpoint de login no mock..."
+          
+          # Testar endpoint de login
+          curl -f -s -X POST "http://localhost:$MOCK_SERVER_PORT/login" \
+            -H "Content-Type: application/json" \
+            -d '{"username":"julio.lima","senha":"123456"}' > /dev/null 2>&1 || {
+            echo "❌ Endpoint de login não está funcionando no mock"
+            exit 1
+          }
+          
+          echo "✅ Mock API está funcionando corretamente!"
+
+      - name: Run K6 Iteration Tests
+        uses: grafana/k6-action@v0.3.0
+        env:
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+          USE_MOCK_SERVER: ${{ env.USE_MOCK_SERVER }}
+        with:
+          filename: test/login.interation.test.js
+          flags: --out json=results-iterations-mock.json
+
+      - name: Run K6 Virtual Users Tests
+        uses: grafana/k6-action@v0.3.0
+        env:
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+          USE_MOCK_SERVER: ${{ env.USE_MOCK_SERVER }}
+        with:
+          filename: test/login.virtual.users.test.js
+          flags: --out json=results-virtual-users-mock.json
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-mock-results
+          path: |
+            results-*-mock.json
+            *.html
+          retention-days: 30
+
+      - name: Generate Mock Test Summary
+        run: |
+          echo "📊 Resumo dos Testes de Performance (Mock):"
+          echo "=========================================="
+          echo "🎭 Ambiente: Servidor Mock"
+          echo "🔗 API URL: $API_BASE_URL"
+          echo ""
+
+          # Verificar se os arquivos de resultado existem
+          if [ -f results-iterations-mock.json ]; then
+            echo "✅ Teste por iterações: COMPLETO"
+            echo "   - Arquivo: results-iterations-mock.json"
+            
+            # Extrair informações básicas do resultado
+            if command -v jq >/dev/null 2>&1; then
+              echo "   - Métricas:"
+              jq -r '.metrics.http_req_duration.values.p95 // "N/A"' results-iterations-mock.json | xargs echo "     * P95 Duration:"
+              jq -r '.metrics.http_req_failed.values.rate // "N/A"' results-iterations-mock.json | xargs echo "     * Failed Rate:"
+            fi
+          else
+            echo "❌ Teste por iterações: FALHOU"
+          fi
+
+          if [ -f results-virtual-users-mock.json ]; then
+            echo "✅ Teste com usuários virtuais: COMPLETO"
+            echo "   - Arquivo: results-virtual-users-mock.json"
+            
+            # Extrair informações básicas do resultado
+            if command -v jq >/dev/null 2>&1; then
+              echo "   - Métricas:"
+              jq -r '.metrics.http_req_duration.values.p95 // "N/A"' results-virtual-users-mock.json | xargs echo "     * P95 Duration:"
+              jq -r '.metrics.http_req_failed.values.rate // "N/A"' results-virtual-users-mock.json | xargs echo "     * Failed Rate:"
+            fi
+          else
+            echo "❌ Teste com usuários virtuais: FALHOU"
+          fi
+
+          echo ""
+          echo "🔍 Informações do Ambiente:"
+          echo "   - Node.js: $(node --version)"
+          echo "   - NPM: $(npm --version)"
+          echo "   - Porta do Mock: $MOCK_SERVER_PORT"
+          echo "   - Ambiente: Mock Server"
+
+          echo ""
+          echo "🎭 Todos os testes executados com servidor mock!"
+
+      - name: Upload HTML Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-mock-html-reports
+          path: report-*.html
+          retention-days: 30
+
+      - name: Cleanup Mock Server
+        if: always()
+        run: |
+          echo "🧹 Limpando servidor mock..."
+          if [ -f mock-server.pid ]; then
+            MOCK_PID=$(cat mock-server.pid)
+            if kill -0 $MOCK_PID 2>/dev/null; then
+              echo "🛑 Encerrando processo do servidor mock (PID: $MOCK_PID)..."
+              kill $MOCK_PID
+              sleep 2
+            fi
+            rm -f mock-server.pid
+          fi
+
+          # Verificar se ainda há processos na porta 3000
+          if lsof -ti:$MOCK_SERVER_PORT > /dev/null 2>&1; then
+            echo "🛑 Forçando encerramento de processos na porta $MOCK_SERVER_PORT..."
+            lsof -ti:$MOCK_SERVER_PORT | xargs kill -9
+          fi
+
+          echo "✅ Limpeza concluída!" 

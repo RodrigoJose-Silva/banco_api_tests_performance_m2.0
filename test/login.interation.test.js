@@ -13,7 +13,9 @@ export const options = {
 };
 
 export default function () {
-  const url = 'http://localhost:3000/login';
+  // Usar variável de ambiente para a URL da API ou fallback para localhost
+  const baseUrl = __ENV.API_BASE_URL || 'http://localhost:3000';
+  const url = `${baseUrl}/login`;
 
   const payload = JSON.stringify({
     username: 'julio.lima',

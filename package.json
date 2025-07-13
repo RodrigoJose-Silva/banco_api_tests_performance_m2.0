@@ -10,7 +10,11 @@
     "test:ci": "k6 run --out json=results.json test/login.interation.test.js",
     "lint": "eslint test/*.js",
     "lint:fix": "eslint test/*.js --fix",
-    "start:mock": "node mock-server.js"
+    "start:mock": "node mock-server.js",
+    "validate:api": "node scripts/validate-api.js",
+    "setup:test-env": "node scripts/setup-test-environment.js",
+    "test:with-validation": "npm run validate:api && npm run test:all",
+    "test:smart": "npm run setup:test-env && npm run test:all"
   },
   "keywords": [
     "k6",
