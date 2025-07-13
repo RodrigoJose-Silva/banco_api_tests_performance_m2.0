@@ -30,6 +30,7 @@ banco_api_tests_performance_m2.0/
 ├── 📈 html-report.html
 ├── 🧪 test/
 │   ├── login.interation.test.js
+│   ├── login.stages.test.js
 │   └── login.virtual.users.test.js
 └── 🚫 .gitignore
 ```
@@ -40,7 +41,7 @@ banco_api_tests_performance_m2.0/
 
 **Configuração:**
 
-- **Iterações:** 50
+- **Iterações:** 10
 - **Threshold:** 95% das requisições < 20ms
 - **Taxa de Falha:** < 1%
 
@@ -50,7 +51,23 @@ banco_api_tests_performance_m2.0/
 - Validação de status 200
 - Verificação de token de resposta
 
-### 2. 👥 Teste com Usuários Virtuais (`login.virtual.users.test.js`)
+### 2. 📈 Teste com Estágios (`login.stages.test.js`)
+
+**Configuração:**
+
+- **Estágio 1 (Ramp-up):** 0 → 20 usuários em 10s
+- **Estágio 2 (Carga constante):** 20 usuários por 30s
+- **Estágio 3 (Ramp-down):** 20 → 0 usuários em 10s
+- **Threshold:** 95% das requisições < 2000ms
+- **Taxa de Falha:** < 1%
+
+**Funcionalidades Testadas:**
+
+- Simulação de cenários reais de carga
+- Teste de ramp-up e ramp-down
+- Validação de performance em diferentes fases de uso
+
+### 3. 👥 Teste com Usuários Virtuais (`login.virtual.users.test.js`)
 
 **Configuração:**
 
@@ -77,6 +94,9 @@ banco_api_tests_performance_m2.0/
 ```bash
 # Teste por iterações
 k6 run test/login.interation.test.js
+
+# Teste com estágios (ramp-up/ramp-down)
+k6 run test/login.stages.test.js
 
 # Teste com usuários virtuais
 k6 run test/login.virtual.users.test.js
@@ -110,3 +130,37 @@ Este projeto faz parte do programa de estudos da **Mentoria 2.0**, onde aprendem
 ## 📝 Licença
 
 Este projeto é parte do material de estudo da Mentoria 2.0.
+
+---
+
+## 🛠️ Ferramentas e Tecnologias
+
+<div align="center">
+
+### 🧪 **Ferramentas de Teste**
+
+![K6](https://img.shields.io/badge/K6-7D3CF8?style=for-the-badge&logo=k6&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+
+### 🌐 **Protocolos e Formatos**
+
+![HTTP](https://img.shields.io/badge/HTTP-FF6B6B?style=for-the-badge&logo=http&logoColor=white)
+![JSON](https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=json&logoColor=white)
+![REST API](https://img.shields.io/badge/REST_API-FF6B6B?style=for-the-badge&logo=rest&logoColor=white)
+
+### 📊 **Relatórios e Visualização**
+
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+
+### 🔧 **Ferramentas de Desenvolvimento**
+
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)
+![Cursor](https://img.shields.io/badge/Cursor-00D4AA?style=for-the-badge&logo=cursor&logoColor=white)
+
+### 📱 **Sistema Operacional**
+
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+
+</div>
