@@ -6,21 +6,25 @@
 
 ## 📋 Sobre o Projeto
 
-Este repositório contém testes de performance para uma API de banco (local), desenvolvido como parte dos estudos da **Mentoria 2.0** ministrada pelo **Julio de Lima**. O projeto demonstra diferentes abordagens para testar a performance e carga de APIs usando a ferramenta K6.
+Este repositório contém testes de performance para uma API de banco (local), desenvolvido como parte dos estudos da **Mentoria 2.0** ministrada pelo **Julio de Lima**. O projeto demonstra diferentes abordagens para testar a performance e carga de APIs usando a ferramenta K6, incluindo testes de autenticação e operações bancárias.
 
 ## 🎯 Objetivos
 
 - ✅ Implementar testes de performance com K6
 - ✅ Testar diferentes cenários de carga
 - ✅ Validar performance de endpoints de autenticação
+- ✅ Testar operações bancárias com autenticação
 - ✅ Gerar relatórios de performance
 - ✅ Aplicar boas práticas em testes de API
+- ✅ Implementar helpers reutilizáveis
+- ✅ Organizar dados de teste em fixtures
 
 ## 🛠️ Tecnologias Utilizadas
 
 - **🔧 K6** - Ferramenta de teste de performance
 - **🌐 HTTP/JSON** - Comunicação com APIs
 - **📊 Relatórios HTML** - Visualização de resultados
+- **🔐 JWT** - Autenticação e autorização
 
 ## 📁 Estrutura do Projeto
 
@@ -28,10 +32,18 @@ Este repositório contém testes de performance para uma API de banco (local), d
 banco_api_tests_performance_m2.0/
 ├── 📄 README.md
 ├── 📈 html-report.html
-├── 🧪 test/
-│   ├── login.interation.test.js
-│   ├── login.stages.test.js
-│   └── login.virtual.users.test.js
+├── 🧪 tests/
+│   ├── loginTests/
+│   │   ├── login.interation.test.js
+│   │   ├── login.stages.test.js
+│   │   └── login.virtual.users.test.js
+│   └── transferenciaTests/
+│       └── transferencia.test.js
+├── 🔧 helpers/
+│   └── autenticacao.js
+├── 📋 fixtures/
+│   ├── postLogin.json
+│   └── postTransferencia.json
 └── 🚫 .gitignore
 ```
 
@@ -82,6 +94,50 @@ banco_api_tests_performance_m2.0/
 - Teste de concorrência
 - Validação de performance sob stress
 
+### 4. 💰 Teste de Transferência (`transferencia.test.js`)
+
+**Configuração:**
+
+- **Iterações:** 1
+- **Autenticação:** Automática via helper
+- **Threshold:** Validação de status 201
+
+**Funcionalidades Testadas:**
+
+- Endpoint: `POST /transferencias`
+- Autenticação automática com token
+- Validação de criação de transferência
+- Teste de operação bancária completa
+
+## 🔧 Helpers e Utilitários
+
+### Autenticação (`helpers/autenticacao.js`)
+
+- **Função:** `obterToken()`
+- **Propósito:** Obter token de autenticação via login
+- **Reutilização:** Centraliza lógica de autenticação
+- **Retorno:** Token JWT para autorização
+
+## 📋 Fixtures (Dados de Teste)
+
+### Login (`fixtures/postLogin.json`)
+```json
+{
+    "username": "julio.lima",
+    "senha": "123456"
+}
+```
+
+### Transferência (`fixtures/postTransferencia.json`)
+```json
+{
+    "contaOrigem": 1,
+    "contaDestino": 2,
+    "valor": 1000,
+    "token": ""
+}
+```
+
 ## 🚀 Como Executar
 
 ### Pré-requisitos
@@ -93,13 +149,16 @@ banco_api_tests_performance_m2.0/
 
 ```bash
 # Teste por iterações
-k6 run test/login.interation.test.js
+k6 run tests/loginTests/login.interation.test.js
 
 # Teste com estágios (ramp-up/ramp-down)
-k6 run test/login.stages.test.js
+k6 run tests/loginTests/login.stages.test.js
 
 # Teste com usuários virtuais
-k6 run test/login.virtual.users.test.js
+k6 run tests/loginTests/login.virtual.users.test.js
+
+# Teste de transferência
+k6 run tests/transferenciaTests/transferencia.test.js
 
 # Gerar relatório HTML
 K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=html-report.html k6 run <path_e_nome_do_teste>
@@ -113,6 +172,8 @@ Os testes geram relatórios detalhados incluindo:
 - 📈 Taxa de requisições por segundo
 - ❌ Taxa de erro
 - 📊 Percentis de performance
+- 🔐 Validação de autenticação
+- 💰 Validação de operações bancárias
 
 ## 🎓 Mentoria 2.0
 
@@ -123,6 +184,10 @@ Este projeto faz parte do programa de estudos da **Mentoria 2.0**, onde aprendem
 - 📊 Análise de resultados
 - 🎯 Definição de thresholds
 - 🔄 Diferentes estratégias de teste
+- 🔐 Testes com autenticação
+- 💰 Testes de operações bancárias
+- 🛠️ Organização de código com helpers
+- 📋 Gerenciamento de dados de teste
 
 **Mentor:** Julio de Lima  
 **Foco:** Testes de Performance e Carga
@@ -147,6 +212,11 @@ Este projeto é parte do material de estudo da Mentoria 2.0.
 ![HTTP](https://img.shields.io/badge/HTTP-FF6B6B?style=for-the-badge&logo=http&logoColor=white)
 ![JSON](https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=json&logoColor=white)
 ![REST API](https://img.shields.io/badge/REST_API-FF6B6B?style=for-the-badge&logo=rest&logoColor=white)
+
+### 🔐 **Autenticação e Segurança**
+
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)
+![Bearer Token](https://img.shields.io/badge/Bearer_Token-FF6B6B?style=for-the-badge&logo=security&logoColor=white)
 
 ### 📊 **Relatórios e Visualização**
 
