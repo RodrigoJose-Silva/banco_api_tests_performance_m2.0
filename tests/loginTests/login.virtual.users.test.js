@@ -17,7 +17,7 @@ import { sleep, check } from 'k6'
 
 // Carrega os dados de teste do arquivo JSON de fixtures
 // Estes dados serão usados como payload para a requisição de login
-const postLogin = JSON.parse(open('../fixtures/postLogin.json'))
+const postLogin = JSON.parse(open('../../fixtures/postLogin.json'))
 
 // Configuração das opções do teste com usuários virtuais
 export const options = {
