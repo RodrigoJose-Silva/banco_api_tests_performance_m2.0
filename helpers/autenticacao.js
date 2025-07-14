@@ -1,3 +1,16 @@
+/**
+ * 🔐 HELPER DE AUTENTICAÇÃO
+ * 
+ * Este arquivo contém funções auxiliares para autenticação nos testes de performance.
+ * Fornece métodos reutilizáveis para obter tokens de acesso necessários para
+ * endpoints que requerem autenticação.
+ * 
+ * Funcionalidades:
+ * - Obtenção de token de autenticação via login
+ * - Reutilização de credenciais de teste
+ * - Centralização da lógica de autenticação
+ */
+
 // Importa o módulo HTTP do K6 para fazer requisições HTTP
 import http from 'k6/http'
 
@@ -5,6 +18,10 @@ import http from 'k6/http'
 // Estes dados serão usados como payload para a requisição de login
 const postLogin = JSON.parse(open('../fixtures/postLogin.json'))
 
+/**
+ * Obtém um token de autenticação fazendo login na API
+ * @returns {string} Token de autenticação para uso em requisições autorizadas
+ */
 export function obterToken() {
     // URL do endpoint de login da API
     const url = 'http://localhost:3000/login'
@@ -25,5 +42,6 @@ export function obterToken() {
     // Envia o payload com as credenciais e os parâmetros configurados
     const response = http.post(url, payload, params)
 
+    // Retorna o token extraído da resposta JSON
     return response.json('token')
 }
