@@ -6,21 +6,26 @@
 
 ## 📋 Sobre o Projeto
 
-Este repositório contém testes de performance para uma API de banco (local), desenvolvido como parte dos estudos da **Mentoria 2.0** ministrada pelo **Julio de Lima**. O projeto demonstra diferentes abordagens para testar a performance e carga de APIs usando a ferramenta K6.
+Este repositório contém testes de performance para uma API de banco (local), desenvolvido como parte dos estudos da **Mentoria 2.0** ministrada pelo **Julio de Lima**. O projeto demonstra diferentes abordagens para testar a performance e carga de APIs usando a ferramenta K6, incluindo testes de autenticação e operações bancárias.
 
 ## 🎯 Objetivos
 
 - ✅ Implementar testes de performance com K6
 - ✅ Testar diferentes cenários de carga
 - ✅ Validar performance de endpoints de autenticação
+- ✅ Validar performance de operações bancárias (transferências)
+- ✅ Implementar autenticação automática nos testes
 - ✅ Gerar relatórios de performance
 - ✅ Aplicar boas práticas em testes de API
+- ✅ Organizar código com helpers e fixtures
 
 ## 🛠️ Tecnologias Utilizadas
 
 - **🔧 K6** - Ferramenta de teste de performance
 - **🌐 HTTP/JSON** - Comunicação com APIs
+- **🔐 JWT** - Autenticação via tokens
 - **📊 Relatórios HTML** - Visualização de resultados
+- **⚙️ Configuração** - Gerenciamento de variáveis de ambiente
 
 ## 📁 Estrutura do Projeto
 
@@ -28,16 +33,30 @@ Este repositório contém testes de performance para uma API de banco (local), d
 banco_api_tests_performance_m2.0/
 ├── 📄 README.md
 ├── 📈 html-report.html
-├── 🧪 test/
-│   ├── login.interation.test.js
-│   ├── login.stages.test.js
-│   └── login.virtual.users.test.js
-└── 🚫 .gitignore
+├── 🚫 .gitignore
+├── ⚙️ config/
+│   └── config.local.json          # Configurações locais da API
+├── 📋 fixtures/
+│   ├── postLogin.json             # Dados de teste para login
+│   └── postTransferencia.json     # Dados de teste para transferência
+├── 🛠️ helpers/
+│   └── autenticacao.js            # Funções de autenticação
+├── 📁 utils/
+│   └── variaveis.js               # Utilitários de configuração
+└── 🧪 tests/
+    ├── loginTests/
+    │   ├── login.interation.test.js      # Teste por iterações
+    │   ├── login.stages.test.js          # Teste com estágios
+    │   └── login.virtual.users.test.js   # Teste com usuários virtuais
+    └── transferenciaTests/
+        └── transferencia.test.js         # Teste de transferência
 ```
 
 ## 🧪 Testes Implementados
 
-### 1. 🔄 Teste por Iterações (`login.interation.test.js`)
+### 🔐 Testes de Autenticação
+
+#### 1. 🔄 Teste por Iterações (`login.interation.test.js`)
 
 **Configuração:**
 
@@ -50,8 +69,9 @@ banco_api_tests_performance_m2.0/
 - Endpoint: `POST /login`
 - Validação de status 200
 - Verificação de token de resposta
+- Uso de fixtures para dados de teste
 
-### 2. 📈 Teste com Estágios (`login.stages.test.js`)
+#### 2. 📈 Teste com Estágios (`login.stages.test.js`)
 
 **Configuração:**
 
@@ -67,7 +87,7 @@ banco_api_tests_performance_m2.0/
 - Teste de ramp-up e ramp-down
 - Validação de performance em diferentes fases de uso
 
-### 3. 👥 Teste com Usuários Virtuais (`login.virtual.users.test.js`)
+#### 3. 👥 Teste com Usuários Virtuais (`login.virtual.users.test.js`)
 
 **Configuração:**
 
@@ -81,6 +101,43 @@ banco_api_tests_performance_m2.0/
 - Simulação de carga real
 - Teste de concorrência
 - Validação de performance sob stress
+- Variação de dados de usuário
+
+### 💰 Testes de Operações Bancárias
+
+#### 4. 🏦 Teste de Transferência (`transferencia.test.js`)
+
+**Configuração:**
+
+- **Iterações:** 1
+- **Autenticação:** Automática via helper
+- **Endpoint:** `POST /transferencias`
+
+**Funcionalidades Testadas:**
+
+- Autenticação automática com token JWT
+- Transferência entre contas
+- Validação de status 201 (Created)
+- Uso de headers de autorização
+
+## 🛠️ Componentes do Sistema
+
+### 📋 Fixtures
+
+- **`postLogin.json`**: Dados de credenciais para autenticação
+- **`postTransferencia.json`**: Dados para operações de transferência
+
+### 🛠️ Helpers
+
+- **`autenticacao.js`**: Função `obterToken()` para autenticação automática
+
+### ⚙️ Utilitários
+
+- **`variaveis.js`**: Função `pegarBaseURL()` para gerenciar URLs da API
+
+### ⚙️ Configuração
+
+- **`config.local.json`**: Configurações locais da API
 
 ## 🚀 Como Executar
 
@@ -93,16 +150,31 @@ banco_api_tests_performance_m2.0/
 
 ```bash
 # Teste por iterações
-k6 run test/login.interation.test.js
+k6 run tests/loginTests/login.interation.test.js
 
 # Teste com estágios (ramp-up/ramp-down)
-k6 run test/login.stages.test.js
+k6 run tests/loginTests/login.stages.test.js
 
 # Teste com usuários virtuais
-k6 run test/login.virtual.users.test.js
+k6 run tests/loginTests/login.virtual.users.test.js
+
+# Teste de transferência
+k6 run tests/transferenciaTests/transferencia.test.js
 
 # Gerar relatório HTML
 K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=html-report.html k6 run <path_e_nome_do_teste>
+```
+
+### Configuração de Ambiente
+
+O projeto suporta configuração via variáveis de ambiente:
+
+```bash
+# Definir URL base da API
+export BASE_URL=http://localhost:3000
+
+# Executar testes com URL customizada
+BASE_URL=http://api.exemplo.com k6 run tests/loginTests/login.interation.test.js
 ```
 
 ## 📊 Resultados
@@ -113,6 +185,8 @@ Os testes geram relatórios detalhados incluindo:
 - 📈 Taxa de requisições por segundo
 - ❌ Taxa de erro
 - 📊 Percentis de performance
+- 🔐 Validação de autenticação
+- 💰 Validação de operações bancárias
 
 ## 🎓 Mentoria 2.0
 
@@ -123,6 +197,9 @@ Este projeto faz parte do programa de estudos da **Mentoria 2.0**, onde aprendem
 - 📊 Análise de resultados
 - 🎯 Definição de thresholds
 - 🔄 Diferentes estratégias de teste
+- 🔐 Autenticação em testes de API
+- 🏗️ Organização de código com helpers e fixtures
+- ⚙️ Gerenciamento de configurações
 
 **Mentor:** Julio de Lima  
 **Foco:** Testes de Performance e Carga
@@ -147,6 +224,7 @@ Este projeto é parte do material de estudo da Mentoria 2.0.
 ![HTTP](https://img.shields.io/badge/HTTP-FF6B6B?style=for-the-badge&logo=http&logoColor=white)
 ![JSON](https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=json&logoColor=white)
 ![REST API](https://img.shields.io/badge/REST_API-FF6B6B?style=for-the-badge&logo=rest&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)
 
 ### 📊 **Relatórios e Visualização**
 

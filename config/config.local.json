@@ -1,3 +1,16 @@
+/**
+ * ⚙️ CONFIGURAÇÃO LOCAL - VARIÁVEIS DE AMBIENTE
+ * 
+ * Este arquivo contém as configurações locais do projeto de testes de performance.
+ * As configurações aqui definidas são usadas como fallback quando variáveis
+ * de ambiente não estão disponíveis.
+ * 
+ * Estrutura:
+ * - baseURL: URL base da API para execução dos testes
+ * 
+ * Nota: Este arquivo não deve ser commitado no repositório em produção,
+ * pois pode conter informações específicas do ambiente local.
+ */
 {
     "baseURL": "http://localhost:3000"
 }
