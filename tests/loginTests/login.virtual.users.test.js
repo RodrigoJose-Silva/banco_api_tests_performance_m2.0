@@ -14,6 +14,8 @@ import http from 'k6/http'
 // sleep: para introduzir delays entre requisições
 // check: para validar respostas da API
 import { sleep, check } from 'k6'
+import { pegarBaseURL } from '../../utils/variaveis.js';
+
 
 // Carrega os dados de teste do arquivo JSON de fixtures
 // Estes dados serão usados como payload para a requisição de login
@@ -42,7 +44,7 @@ export const options = {
 // Função principal do teste - será executada por cada usuário virtual
 export default function () {
   // URL do endpoint de login da API
-  const url = 'http://localhost:3000/login'
+  const url = pegarBaseURL() + '/login'
 
   // Modifica o username para simular diferentes usuários
   // Isso permite testar com dados variados em cada execução
