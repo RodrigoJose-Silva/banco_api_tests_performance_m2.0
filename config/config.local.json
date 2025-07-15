@@ -6,10 +6,17 @@
  * de ambiente não estão disponíveis.
  * 
  * Estrutura:
- * - baseURL: URL base da API para execução dos testes
+ * - baseURL: URL base da API bancária para execução dos testes
+ * 
+ * Prioridade de configuração:
+ * 1. Variável de ambiente BASE_URL (se definida)
+ * 2. Configuração local deste arquivo
  * 
  * Nota: Este arquivo não deve ser commitado no repositório em produção,
  * pois pode conter informações específicas do ambiente local.
+ * 
+ * Segurança: Em ambientes de produção, sempre use variáveis de ambiente
+ * para configurar URLs e outras informações sensíveis.
  */
 {
     "baseURL": "http://localhost:3000"

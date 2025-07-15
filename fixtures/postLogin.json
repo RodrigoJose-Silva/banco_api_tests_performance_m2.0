@@ -1,3 +1,16 @@
+/**
+ * 📋 FIXTURES - DADOS DE TESTE PARA LOGIN
+ * 
+ * Este arquivo contém os dados de teste utilizados para autenticação
+ * nos testes de performance da API bancária.
+ * 
+ * Estrutura dos dados:
+ * - username: Nome de usuário para autenticação
+ * - senha: Senha do usuário para autenticação
+ * 
+ * Nota: Estas são credenciais de teste e não devem ser utilizadas
+ * em ambientes de produção.
+ */
 {
     "username": "julio.lima",
     "senha": "123456"
