@@ -1,1 +1,8 @@
+# 🚫 ARQUIVOS IGNORADOS PELO GIT
+# 
+# Este arquivo define quais arquivos e diretórios devem ser ignorados
+# pelo controle de versão Git.
+
+# 📊 Relatórios de Performance
+# Arquivos de relatório HTML gerados pelos testes de performance
 html-report.html
