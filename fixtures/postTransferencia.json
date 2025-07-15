@@ -1,3 +1,18 @@
+/**
+ * 📋 FIXTURES - DADOS DE TESTE PARA TRANSFERÊNCIA
+ * 
+ * Este arquivo contém os dados de teste utilizados para operações
+ * de transferência entre contas nos testes de performance da API bancária.
+ * 
+ * Estrutura dos dados:
+ * - contaOrigem: ID da conta de origem da transferência
+ * - contaDestino: ID da conta de destino da transferência
+ * - valor: Valor a ser transferido (em centavos ou unidade monetária)
+ * - token: Campo para token de autenticação (preenchido dinamicamente)
+ * 
+ * Nota: Os IDs das contas e valores são específicos para o ambiente de teste
+ * e devem ser ajustados conforme necessário para diferentes cenários.
+ */
 {
   "contaOrigem": 1,
   "contaDestino": 2,
